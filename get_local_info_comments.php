@@ -21,9 +21,8 @@
 						"localName" : "'.$e->getlocalName().'",
 						"localLatitud" : '.$e->getlocalLatitud().',
 						"localLongitud" : '.$e->getlocalLongitud().',
-						"rating" : '.$e->getlocalRating().'
-						},
-					"datosUser" : [';
+						"rating" : '.$e->getlocalRating().',
+						"datosUser" : [';
 						foreach(User::getUserComment() as $d)
 						{
 							if (!$first1) $json .= ','; else $first1 = false;		
@@ -38,7 +37,7 @@
 						}
 		$first1=true;			
 		};
-		$json .= ' ]}';
+		$json .= ' ]}},';
 		
 		if(!$found){echo '{ "status" : 1 , "message" : "Local not Found"}'; die; }
 		//end json
