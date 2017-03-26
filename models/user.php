@@ -9,6 +9,7 @@
 		private $email;
 		private $imageURL;
 		private $comment;
+		private $password;
 
 		public function get_id_user() { return $this->idUser; }
 		public function set_id_user($value) { $this->idUser = $value; }		
@@ -24,23 +25,52 @@
 		public function set_imageURL($value) { $this->imageURL=$value; } 
 		public function get_comment() { return $this->comment; }
 		public function set_comment($value) { $this->comment=$value; } 
+		public function get_password() { return $this->password; }
+		public function set_password($value) { $this->password = $value; }
 
 		public function __construct()
 		{
-			
-			if (func_num_args() == 0) {
+			if (func_num_args() == 0)
+			{
+				$idUser = '';
+				$name = '';
+				$second_name = '';
+				$last_name = '';
+				$email = ''; 
+				$imageURL = '';
+				$comment = '';
+				$password = '';
+			}
+
+			if (func_num_args() == 2) 
+			{
 				$args = func_get_args();
+				$name_user = $args[0];
+				$password = $args[1];
+
 				$connection = get_connection();
-				$query = 'SELECT first_name, second_name, last_name, email, image
-				FROM User WHERE name_user = '."'victor123'";
+				
+				$query = 'SELECT id_user, first_name, second_name, last_name, email, image FROM User WHERE name_user = ? AND password = sha1(?);';
+				
 				$command = $connection->prepare($query);
+				
+				//bind param
+				$command->bind_param('ss',$name_user, $password);
+				
 				if ($command == false) { echo 'Error in Query : '.$query; die; }
+				
 				$command->execute();
-				$command->bind_result($this->name, $this->second_name, $this->last_name, $this->email, $this->imageURL);
-				$command->fetch();
+				
+				$command->bind_result($this->idUser, $this->name, $this->second_name, $this->last_name, $this->email, $this->imageURL);
+				
+				$found = $command->fetch();
+				
+				mysqli_stmt_close($command);
+
+				$connection->close();
 
 			}
-			if(func_num_args()==5)
+			if(func_num_args() == 5)
 			{
 				$args=func_get_args();
 				$this->name=$args[0];
@@ -54,22 +84,26 @@
 		public function getUserComment()
 		{
 			$list=array();  
+       		
        		$connection=get_connection();
+        	
         	$query='SELECT u.first_name, u.second_name, u.last_name, e.comment, u.image
 					FROM premises p, evaluations e, user u
 					WHERE p.id_premises = e.id_premises_evaluations
 					and e.id_user_evaluation = u.id_user;';
+			
 			$command = $connection->prepare($query);
+			
 			if ($command === false) {
 				echo "Error in Query ".$query;
 				die;
 			}
 			//execute command 
 			$command->execute();
-			//link columns to variables
+
 			$command->bind_result($name, $second_name, $last_name, $comment, $imageURL);
 			while ($command->fetch()) {
-				//add Turno to list
+
 			array_push($list, new User($name, $second_name, $last_name, $comment,$imageURL));
 			}
 			// return list
